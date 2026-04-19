@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AutoPrime — Makina në Shitje</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#f5f0e8;--cream2:#ede7d9;--cream3:#e4dccb;
+  --parchment:#d9d0bc;--warm:#faf8f4;
+  --brown:#2c2416;--brown2:#3d3020;--brown-mid:#6b5a3e;
+  --brown-light:#9c8666;--gold:#b8965a;--gold-light:#d4b07a;
+  --gold-dim:rgba(184,150,90,0.12);
+  --muted:#9c8e7a;--border:rgba(44,36,22,0.1);--border2:rgba(44,36,22,0.06);
+  --shadow:rgba(44,36,22,0.08);
+  --green:#5a8a6a;--green-dim:rgba(90,138,106,0.1);
+  --red:#a0522d;--red-dim:rgba(160,82,45,0.1);
+  --whatsapp:#25d366;--whatsapp-dim:rgba(37,211,102,0.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--brown);font-family:'Jost',sans-serif;font-size:14px;line-height:1.6;max-width:430px;margin:0 auto;min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
+.screen{display:none;min-height:100vh}.screen.active{display:block}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(245,240,232,0.96);backdrop-filter:blur(20px);border-bottom:1px solid var(–border);padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:‘Playfair Display’,serif;font-size:20px;font-weight:500;color:var(–brown);line-height:1.1}
+.logo span{display:block;font-size:9px;font-weight:400;font-family:‘Jost’,sans-serif;letter-spacing:0.2em;text-transform:uppercase;color:var(–brown-light)}
+.top-right{display:flex;gap:8px}
+.t-btn{width:38px;height:38px;background:var(–warm);border:1px solid var(–border);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:all .2s;position:relative}
+.t-btn:hover{border-color:var(–gold)}
+.fbadge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:var(–gold);border-radius:50%;font-size:9px;font-weight:700;color:var(–warm);display:none;align-items:center;justify-content:center}
+
+/* HERO */
+.hero{background:var(–warm);margin:14px 16px;border-radius:20px;border:1px solid var(–border);padding:18px;box-shadow:0 4px 30px var(–shadow)}
+.hero-lbl{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(–brown-light);margin-bottom:12px}
+.search-row{display:flex;gap:8px}
+.s-inp{flex:1;background:var(–cream);border:1px solid var(–border);border-radius:12px;padding:11px 14px;font-family:‘Jost’,sans-serif;font-size:13.5px;color:var(–brown);outline:none;transition:border-color .2s}
+.s-inp::placeholder{color:var(–muted)}
+.s-inp:focus{border-color:var(–gold)}
+.s-btn{background:var(–brown);color:var(–cream);border:none;border-radius:12px;padding:0 18px;font-family:‘Jost’,sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:background .2s}
+.s-btn:hover{background:var(–brown2)}
+
+/* ACTIVE FILTER CHIPS */
+.af-wrap{display:flex;gap:6px;overflow-x:auto;padding:0 18px 0;margin-bottom:10px;scrollbar-width:none}
+.af-wrap::-webkit-scrollbar{display:none}
+.af-wrap:empty{display:none;margin:0}
+.af-chip{flex-shrink:0;display:flex;align-items:center;gap:5px;padding:5px 10px 5px 12px;background:var(–gold-dim);border:1px solid rgba(184,150,90,.25);border-radius:100px;font-size:12px;color:var(–gold);font-weight:500;white-space:nowrap}
+.af-x{font-size:14px;cursor:pointer;opacity:.7}.af-x:hover{opacity:1}
+
+/* SORT BAR */
+.sort-bar{display:flex;align-items:center;justify-content:space-between;padding:0 18px 12px}
+.res-c{font-size:13px;color:var(–muted)}.res-c span{color:var(–brown);font-weight:600}
+.sort-pill{display:flex;align-items:center;gap:5px;background:var(–warm);border:1px solid var(–border);border-radius:100px;padding:6px 14px;font-family:‘Jost’,sans-serif;font-size:12px;font-weight:500;color:var(–muted);cursor:pointer;transition:all .2s}
+.sort-pill:hover,.sort-pill.on{border-color:var(–gold);color:var(–gold);background:var(–gold-dim)}
+
+/* FUEL TABS */
+.fuel-tabs{display:flex;gap:8px;overflow-x:auto;padding:0 18px 12px;scrollbar-width:none}
+.fuel-tabs::-webkit-scrollbar{display:none}
+.ftab{flex-shrink:0;padding:7px 16px;background:var(–warm);border:1px solid var(–border);border-radius:100px;font-size:12.5px;font-weight:500;color:var(–muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.ftab.active{background:var(–brown);color:var(–cream);border-color:var(–brown)}
+
+/* CAR CARDS */
+.cars-list{padding:0 18px;display:flex;flex-direction:column;gap:14px;padding-bottom:90px}
+.car-card{background:var(–warm);border:1px solid var(–border);border-radius:20px;overflow:hidden;cursor:pointer;transition:all .25s;box-shadow:0 2px 16px var(–shadow)}
+.car-card:active{transform:scale(0.985)}
+.car-card.hidden{display:none}
+
+.car-img{width:100%;height:210px;background:var(–cream2);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.car-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.car-emoji{font-size:90px;position:relative;z-index:1}
+.car-img-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(44,36,22,0.4) 100%);z-index:2}
+.car-fuel-tag{position:absolute;top:12px;left:12px;padding:4px 12px;border-radius:100px;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;z-index:3}
+.fuel-diesel{background:var(–brown);color:var(–cream)}
+.fuel-benzin{background:#8a6a3e;color:var(–cream)}
+.fuel-hybrid{background:var(–green);color:var(–cream)}
+.fuel-electric{background:#4a7a8a;color:var(–cream)}
+.car-price-overlay{position:absolute;bottom:12px;left:14px;font-family:‘Playfair Display’,serif;font-size:24px;font-weight:700;color:var(–warm);text-shadow:0 2px 8px rgba(0,0,0,.3);z-index:3}
+/* PHOTO UPLOAD */
+.photo-upload-area{border:2px dashed var(–parchment);border-radius:14px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(–cream);margin-bottom:10px;position:relative}
+.photo-upload-area:hover{border-color:var(–gold);background:var(–gold-dim)}
+.photo-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.pu-ico{font-size:32px;margin-bottom:6px}
+.pu-lbl{font-size:13px;font-weight:600;color:var(–brown-mid)}
+.pu-sub{font-size:11px;color:var(–muted);margin-top:3px}
+.photos-preview{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.photo-thumb{width:72px;height:72px;border-radius:10px;object-fit:cover;border:1px solid var(–border);position:relative;display:inline-block}
+.photo-thumb-wrap{position:relative;display:inline-block}
+.photo-thumb-wrap img{width:72px;height:72px;border-radius:10px;object-fit:cover;border:1px solid var(–border)}
+.photo-remove{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:var(–brown);border-radius:50%;color:var(–cream);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px solid var(–warm)}
+
+.car-body{padding:14px 16px}
+.car-brand-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.car-brand{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(–gold)}
+.car-year{font-size:11px;color:var(–muted)}
+.car-model{font-family:‘Playfair Display’,serif;font-size:19px;font-weight:500;line-height:1.2;margin-bottom:4px;color:var(–brown)}
+.car-km{font-size:12px;color:var(–muted);margin-bottom:10px}
+.car-specs-row{display:flex;gap:0;border-top:1px solid var(–border2);padding-top:11px}
+.cspec{flex:1;text-align:center;border-right:1px solid var(–border2)}
+.cspec:last-child{border-right:none}
+.cspec-n{font-family:‘Playfair Display’,serif;font-size:15px;font-weight:500;color:var(–brown)}
+.cspec-l{font-size:10px;color:var(–muted);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+
+/* EMPTY */
+.empty-st{display:none;flex-direction:column;align-items:center;padding:60px 24px;text-align:center;gap:10px}
+.empty-st.show{display:flex}
+.e-ico{font-size:44px;opacity:.3}
+.e-title{font-family:‘Playfair Display’,serif;font-size:20px;color:var(–muted)}
+.e-sub{font-size:13px;color:var(–muted);line-height:1.7}
+.e-clear{margin-top:6px;background:none;border:1px solid var(–gold);color:var(–gold);border-radius:10px;padding:9px 20px;font-family:‘Jost’,sans-serif;font-size:13px;font-weight:500;cursor:pointer}
+
+/* FILTER PANEL */
+.fp-ov{position:fixed;inset:0;background:rgba(44,36,22,.4);backdrop-filter:blur(4px);z-index:100;opacity:0;pointer-events:none;transition:opacity .3s}
+.fp-ov.open{opacity:1;pointer-events:all}
+.fp-panel{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:430px;background:var(–warm);border-top:1px solid var(–border);border-radius:26px 26px 0 0;z-index:101;transition:transform .35s cubic-bezier(.25,.46,.45,.94);max-height:90vh;overflow-y:auto;scrollbar-width:none;padding-bottom:24px}
+.fp-panel::-webkit-scrollbar{display:none}
+.fp-panel.open{transform:translateX(-50%) translateY(0)}
+.fp-handle{width:36px;height:3px;background:var(–parchment);border-radius:2px;margin:14px auto 0}
+.fp-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 10px}
+.fp-title{font-family:‘Playfair Display’,serif;font-size:22px;font-weight:500}
+.fp-reset{font-size:12.5px;color:var(–gold);cursor:pointer;background:none;border:none;font-family:‘Jost’,sans-serif;font-weight:500}
+.fp-x{width:30px;height:30px;background:var(–cream);border:1px solid var(–border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;color:var(–muted)}
+.fp-sec{padding:12px 20px 4px}
+.fp-st{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(–gold);margin-bottom:11px;display:flex;align-items:center;gap:8px}
+.fp-st::after{content:’’;flex:1;height:1px;background:var(–border)}
+.t-chips{display:flex;gap:8px;flex-wrap:wrap}
+.t-chip{padding:8px 16px;background:var(–cream);border:1px solid var(–border);border-radius:10px;font-size:13px;font-weight:500;color:var(–muted);cursor:pointer;transition:all .2s}
+.t-chip.sel{border-color:var(–gold);background:var(–gold-dim);color:var(–brown)}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rb{padding:12px 14px;background:var(–cream);border:1px solid var(–border);border-radius:12px;cursor:pointer;transition:all .2s;text-align:left}
+.rb:hover{border-color:rgba(184,150,90,.4)}
+.rb.sel{border-color:var(–gold);background:var(–gold-dim)}
+.rb-v{font-size:13.5px;font-weight:600;color:var(–brown)}.rb.sel .rb-v{color:var(–gold)}
+.rb-d{font-size:11px;color:var(–muted);margin-top:2px}
+.so-list{display:flex;flex-direction:column;gap:7px}
+.s-opt{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(–cream);border:1px solid var(–border);border-radius:12px;cursor:pointer;transition:all .2s}
+.s-opt.sel{border-color:var(–gold);background:var(–gold-dim)}
+.s-opt-ico{font-size:18px}
+.s-opt-lbl{font-size:13.5px;font-weight:500;color:var(–brown)}
+.s-opt-sub{font-size:11px;color:var(–muted);margin-top:1px}
+.s-radio{width:20px;height:20px;border-radius:50%;border:1.5px solid var(–parchment);margin-left:auto;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.s-opt.sel .s-radio{border-color:var(–gold);background:var(–gold)}
+.s-opt.sel .s-radio::after{content:’’;width:7px;height:7px;border-radius:50%;background:var(–warm)}
+.fp-apply{position:sticky;bottom:0;padding:14px 20px 0;background:var(–warm)}
+.apply-btn{width:100%;background:var(–brown);color:var(–cream);border:none;border-radius:14px;padding:15px;font-family:‘Jost’,sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.apply-btn:hover{background:var(–brown2)}
+
+/* DETAIL */
+#detail{background:var(–cream);position:relative}
+.det-back{position:absolute;top:14px;left:14px;z-index:20;width:38px;height:38px;background:rgba(245,240,232,.92);backdrop-filter:blur(8px);border:1px solid var(–border);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(–brown)}
+.det-fav{position:absolute;top:14px;right:14px;z-index:20;width:38px;height:38px;background:rgba(245,240,232,.92);backdrop-filter:blur(8px);border:1px solid var(–border);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer}
+
+/* Gallery */
+.gal-wrap{position:relative;height:300px;overflow:hidden;background:var(–cream2)}
+.gal-track{display:flex;height:100%;transition:transform .35s cubic-bezier(.25,.46,.45,.94)}
+.gal-slide{flex-shrink:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:100px;cursor:zoom-in;user-select:none}
+.gal-slide:nth-child(1){background:linear-gradient(135deg,#e8e0d0,#ede5d5)}
+.gal-slide:nth-child(2){background:linear-gradient(135deg,#e0ddd5,#e8e3d8)}
+.gal-slide:nth-child(3){background:linear-gradient(135deg,#ddd8ce,#e5dfd4)}
+.gal-slide:nth-child(4){background:linear-gradient(135deg,#e5e0d8,#eae5da)}
+.gal-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
+.gdot{width:5px;height:5px;border-radius:3px;background:rgba(44,36,22,.2);transition:all .3s}
+.gdot.active{background:var(–brown);width:16px}
+.gal-cnt{position:absolute;bottom:12px;right:12px;background:rgba(245,240,232,.85);border-radius:100px;padding:3px 10px;font-size:11px;color:var(–brown)}
+.zoom-w{display:none;position:fixed;inset:0;background:rgba(44,36,22,.97);z-index:200;align-items:center;justify-content:center;flex-direction:column}
+.zoom-w.open{display:flex}
+.zoom-e{font-size:140px}
+.zoom-img-full{max-width:100%;max-height:80vh;object-fit:contain;border-radius:10px}
+.zoom-x{position:absolute;top:20px;right:20px;background:var(–cream);border:none;border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;color:var(–brown)}
+
+.det-body{padding:20px 18px 130px}
+.det-tags{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.dtag{padding:4px 12px;border-radius:100px;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.dtag-diesel{background:var(–brown);color:var(–cream)}
+.dtag-benzin{background:#8a6a3e;color:var(–cream)}
+.dtag-hybrid{background:var(–green);color:var(–cream)}
+.dtag-electric{background:#4a7a8a;color:var(–cream)}
+.dtag-new{background:var(–gold-dim);color:var(–gold);border:1px solid rgba(184,150,90,.3)}
+
+.det-price{font-family:‘Playfair Display’,serif;font-size:36px;font-weight:700;color:var(–brown);line-height:1;margin-bottom:6px}
+.det-name{font-family:‘Playfair Display’,serif;font-size:24px;font-weight:500;line-height:1.2;margin-bottom:4px}
+.det-sub{font-size:13px;color:var(–muted);margin-bottom:2px}
+
+.sec-t{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(–gold);margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.sec-t::after{content:’’;flex:1;height:1px;background:var(–border)}
+
+.specs-grid{display:grid;grid-template-columns:repeat(3,1fr);background:var(–warm);border:1px solid var(–border);border-radius:16px;overflow:hidden}
+.sg-item{padding:14px 10px;text-align:center;border-right:1px solid var(–border2)}
+.sg-item:nth-child(3n){border-right:none}
+.sg-item:nth-child(n+4){border-top:1px solid var(–border2)}
+.sg-ico{font-size:18px;margin-bottom:5px}
+.sg-v{font-family:‘Playfair Display’,serif;font-size:15px;font-weight:500;color:var(–brown)}
+.sg-l{font-size:10px;color:var(–muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+
+.feats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.feat{background:var(–warm);border:1px solid var(–border);border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:8px}
+.feat-ico{font-size:16px}
+.feat-txt{font-size:13px;color:var(–brown)}
+
+.det-desc{background:var(–warm);border:1px solid var(–border);border-radius:14px;padding:16px;font-size:13.5px;color:var(–brown-mid);line-height:1.75}
+
+/* CONTACT BOTTOM BAR */
+.cbot{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(250,248,244,.97);backdrop-filter:blur(16px);border-top:1px solid var(–border);padding:12px 18px 22px;z-index:50}
+.cbot-price-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cbot-lbl{font-size:11px;color:var(–muted)}
+.cbot-price{font-family:‘Playfair Display’,serif;font-size:28px;font-weight:700;color:var(–brown);line-height:1}
+.cbot-btns{display:flex;gap:10px}
+.cbot-call{flex:1;background:var(–cream2);border:1px solid var(–border);color:var(–brown);border-radius:14px;padding:14px;font-family:‘Jost’,sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s}
+.cbot-call:hover{border-color:var(–gold)}
+.cbot-wa{flex:2;background:var(–whatsapp);color:#fff;border:none;border-radius:14px;padding:14px;font-family:‘Jost’,sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;box-shadow:0 4px 20px rgba(37,211,102,.25)}
+.cbot-wa:hover{background:#1db954}
+
+/* ── ADMIN SCREEN ── */
+#admin{background:var(–cream)}
+.adm-top{background:var(–brown);padding:20px 18px 22px}
+.adm-greet{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(245,240,232,.5);margin-bottom:4px}
+.adm-name{font-family:‘Playfair Display’,serif;font-size:24px;font-weight:500;color:var(–cream)}
+.adm-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.adm-stat{background:rgba(245,240,232,.08);border:1px solid rgba(245,240,232,.12);border-radius:14px;padding:14px 10px;text-align:center}
+.adm-stat-n{font-family:‘Playfair Display’,serif;font-size:28px;font-weight:700;color:var(–cream)}
+.adm-stat-l{font-size:9.5px;color:rgba(245,240,232,.5);text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
+.adm-body{padding:18px 18px 100px}
+.adm-sec{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(–gold);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.adm-sec::after{content:’’;flex:1;height:1px;background:var(–border)}
+.adm-add-btn{background:var(–brown);color:var(–cream);border:none;border-radius:10px;padding:6px 16px;font-family:‘Jost’,sans-serif;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0}
+
+/* ADD FORM */
+.add-form{background:var(–warm);border:1px solid var(–border);border-radius:18px;padding:18px;margin-bottom:18px;display:none}
+.add-form.show{display:block}
+.af-title{font-family:‘Playfair Display’,serif;font-size:19px;font-weight:500;margin-bottom:16px;color:var(–brown)}
+.f-lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.07em;color:var(–muted);text-transform:uppercase;margin-bottom:5px}
+.f-inp{width:100%;background:var(–cream);border:1px solid var(–border);border-radius:12px;padding:12px 14px;color:var(–brown);font-family:‘Jost’,sans-serif;font-size:14px;outline:none;transition:border-color .2s;margin-bottom:10px}
+.f-inp:focus{border-color:var(–gold)}
+.f-inp::placeholder{color:var(–muted)}
+.f-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f-sel{width:100%;background:var(–cream);border:1px solid var(–border);border-radius:12px;padding:12px 14px;color:var(–brown);font-family:‘Jost’,sans-serif;font-size:14px;outline:none;transition:border-color .2s;margin-bottom:10px;appearance:none;cursor:pointer}
+.f-sel:focus{border-color:var(–gold)}
+.emoji-pick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.ep{width:44px;height:44px;background:var(–cream);border:1px solid var(–border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;transition:all .2s}
+.ep.sel{border-color:var(–gold);background:var(–gold-dim)}
+.form-submit{width:100%;background:var(–brown);color:var(–cream);border:none;border-radius:12px;padding:14px;font-family:‘Jost’,sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.form-submit:hover{background:var(–brown2)}
+
+/* ADMIN CAR LIST */
+.adm-list{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.adm-row{background:var(–warm);border:1px solid var(–border);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:center}
+.adm-emo{width:54px;height:54px;border-radius:12px;background:var(–cream2);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.adm-info{flex:1;min-width:0}
+.adm-row-brand{font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(–gold)}
+.adm-row-model{font-size:14.5px;font-weight:600;color:var(–brown);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-row-price{font-family:‘Playfair Display’,serif;font-size:16px;font-weight:700;color:var(–brown);margin-top:2px}
+.adm-row-meta{font-size:11px;color:var(–muted);margin-top:1px}
+.adm-acts{display:flex;gap:6px;flex-shrink:0}
+.adm-act{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;border:1px solid var(–border);background:var(–cream);transition:all .2s}
+.adm-act:hover{border-color:var(–gold)}
+.adm-del:hover{border-color:var(–red)!important;background:var(–red-dim)!important}
+
+/* STATUS BADGE */
+.st{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:100px;display:inline-flex;margin-top:4px}
+.st-active{background:var(–green-dim);color:var(–green);border:1px solid rgba(90,138,106,.2)}
+.st-sold{background:var(–red-dim);color:var(–red);border:1px solid rgba(160,82,45,.2)}
+.st-reserved{background:var(–gold-dim);color:var(–gold);border:1px solid rgba(184,150,90,.2)}
+
+/* BOTTOM NAV */
+.bot-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(250,248,244,.97);backdrop-filter:blur(16px);border-top:1px solid var(–border);padding:10px 20px 20px;z-index:50;display:flex;justify-content:space-around}
+.nv{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 14px;border-radius:10px;transition:background .2s}
+.nv:hover{background:var(–cream2)}
+.nv-ico{font-size:20px}
+.nv-lbl{font-size:10px;font-weight:500;color:var(–muted);letter-spacing:.04em}
+.nv.on .nv-lbl{color:var(–gold)}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(–brown);color:var(–cream);padding:12px 22px;border-radius:100px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+
+</head>
+<body>
+
+<!-- ═══════ LIST ═══════ -->
+
+<div id="list" class="screen active">
+  <div class="topbar">
+    <div class="logo">AutoPrime<span>Makina në Shitje</span></div>
+    <div class="top-right">
+      <div class="t-btn" onclick="openFP()">⚙️<div class="fbadge" id="fbadge">0</div></div>
+      <div class="t-btn" onclick="showScreen('admin')">👤</div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-lbl">Gjej Makinën Tënde</div>
+    <div class="search-row">
+      <input class="s-inp" id="search-inp" type="text" placeholder="Kërko markë, model...">
+      <button class="s-btn" onclick="doSearch()">Kërko</button>
+    </div>
+  </div>
+
+  <div class="af-wrap" id="af-wrap"></div>
+
+  <div class="sort-bar">
+    <div class="res-c"><span id="res-count">0</span> makina</div>
+    <button class="sort-pill" id="sort-pill" onclick="openFP()">↕ <span id="sort-lbl">Rendit</span></button>
+  </div>
+
+  <div class="fuel-tabs">
+    <div class="ftab active" onclick="fuelTab(this,'all')">⛽ Të Gjitha</div>
+    <div class="ftab" onclick="fuelTab(this,'diesel')">🔵 Naftë</div>
+    <div class="ftab" onclick="fuelTab(this,'benzin')">🟠 Benzinë</div>
+    <div class="ftab" onclick="fuelTab(this,'hybrid')">🟢 Hybrid</div>
+    <div class="ftab" onclick="fuelTab(this,'electric')">⚡ Elektrik</div>
+  </div>
+
+  <div class="cars-list" id="cars-list"></div>
+  <div class="empty-st" id="empty-st">
+    <div class="e-ico">🚗</div>
+    <div class="e-title">Asnjë makinë nuk u gjet</div>
+    <div class="e-sub">Provo të ndryshosh filtrat ose kategorinë.</div>
+    <button class="e-clear" onclick="resetAll()">✕ Pastro Filtrat</button>
+  </div>
+</div>
+
+<!-- FILTER PANEL -->
+
+<div class="fp-ov" id="fp-ov" onclick="closeFP()"></div>
+<div class="fp-panel" id="fp-panel">
+  <div class="fp-handle"></div>
+  <div class="fp-head">
+    <div class="fp-title">Filtrat</div>
+    <button class="fp-reset" onclick="resetAll()">Pastro</button>
+    <div class="fp-x" onclick="closeFP()">✕</div>
+  </div>
+
+  <div class="fp-sec">
+    <div class="fp-st">⛽ Karburanti</div>
+    <div class="t-chips">
+      <div class="t-chip" data-fuel="diesel" onclick="togChip(this,'fuel')">🔵 Naftë</div>
+      <div class="t-chip" data-fuel="benzin" onclick="togChip(this,'fuel')">🟠 Benzinë</div>
+      <div class="t-chip" data-fuel="hybrid" onclick="togChip(this,'fuel')">🟢 Hybrid</div>
+      <div class="t-chip" data-fuel="electric" onclick="togChip(this,'fuel')">⚡ Elektrik</div>
+    </div>
+  </div>
+
+  <div class="fp-sec">
+    <div class="fp-st">⚙️ Transmisioni</div>
+    <div class="t-chips">
+      <div class="t-chip" data-trans="auto" onclick="togChip(this,'trans')">🔄 Automatik</div>
+      <div class="t-chip" data-trans="manual" onclick="togChip(this,'trans')">🕹️ Manual</div>
+    </div>
+  </div>
+
+  <div class="fp-sec">
+    <div class="fp-st">🏎️ Cilindrata (CC)</div>
+    <div class="rg">
+      <div class="rb" data-engine="small" onclick="togChip(this,'engine')"><div class="rb-v">1000–1600cc</div><div class="rb-d">Ekonomik</div></div>
+      <div class="rb" data-engine="mid" onclick="togChip(this,'engine')"><div class="rb-v">1600–2000cc</div><div class="rb-d">Mesatar</div></div>
+      <div class="rb" data-engine="large" onclick="togChip(this,'engine')"><div class="rb-v">2000–3000cc</div><div class="rb-d">Fuqishëm</div></div>
+      <div class="rb" data-engine="xl" onclick="togChip(this,'engine')"><div class="rb-v">3000cc+</div><div class="rb-d">Premium</div></div>
+    </div>
+  </div>
+
+  <div class="fp-sec">
+    <div class="fp-st">💰 Çmimi</div>
+    <div class="rg">
+      <div class="rb" data-price="0-10000" onclick="togChip(this,'price')"><div class="rb-v">deri 10,000€</div><div class="rb-d">Buxhet</div></div>
+      <div class="rb" data-price="10000-20000" onclick="togChip(this,'price')"><div class="rb-v">10K – 20K€</div><div class="rb-d">Mesatar</div></div>
+      <div class="rb" data-price="20000-40000" onclick="togChip(this,'price')"><div class="rb-v">20K – 40K€</div><div class="rb-d">Premium</div></div>
+      <div class="rb" data-price="40000+" onclick="togChip(this,'price')"><div class="rb-v">40K€+</div><div class="rb-d">Luks</div></div>
+    </div>
+  </div>
+
+  <div class="fp-sec">
+    <div class="fp-st">📅 Viti</div>
+    <div class="t-chips">
+      <div class="t-chip" data-year="old" onclick="togChip(this,'year')">Para 2015</div>
+      <div class="t-chip" data-year="mid" onclick="togChip(this,'year')">2015–2019</div>
+      <div class="t-chip" data-year="new" onclick="togChip(this,'year')">2020+</div>
+    </div>
+  </div>
+
+  <div class="fp-sec">
+    <div class="fp-st">↕️ Renditja</div>
+    <div class="so-list">
+      <div class="s-opt sel" data-sort="default" onclick="selSort(this)"><span class="s-opt-ico">✨</span><div><div class="s-opt-lbl">Parazgjedhur</div><div class="s-opt-sub">Renditje standarde</div></div><div class="s-radio"></div></div>
+      <div class="s-opt" data-sort="price-asc" onclick="selSort(this)"><span class="s-opt-ico">📈</span><div><div class="s-opt-lbl">Çmimi: nga i ulëti</div><div class="s-opt-sub">Makina buxhet fillimisht</div></div><div class="s-radio"></div></div>
+      <div class="s-opt" data-sort="price-desc" onclick="selSort(this)"><span class="s-opt-ico">📉</span><div><div class="s-opt-lbl">Çmimi: nga i larti</div><div class="s-opt-sub">Makina premium fillimisht</div></div><div class="s-radio"></div></div>
+      <div class="s-opt" data-sort="year-desc" onclick="selSort(this)"><span class="s-opt-ico">🆕</span><div><div class="s-opt-lbl">Viti: më të rejat</div><div class="s-opt-sub">Modelet e fundit fillimisht</div></div><div class="s-radio"></div></div>
+      <div class="s-opt" data-sort="km-asc" onclick="selSort(this)"><span class="s-opt-ico">🛣️</span><div><div class="s-opt-lbl">Kilometrazhi: më i ulëti</div><div class="s-opt-sub">Pak të përdorura fillimisht</div></div><div class="s-radio"></div></div>
+    </div>
+  </div>
+
+  <div class="fp-apply">
+    <button class="apply-btn" onclick="applyFilters()">✓ Shfaq <span id="match-c">0</span> Makina</button>
+  </div>
+</div>
+
+<!-- ═══════ DETAIL ═══════ -->
+
+<div id="detail" class="screen">
+  <div class="det-back" onclick="goBack('list')">←</div>
+  <div class="det-fav" id="det-fav" onclick="togFav()">🤍</div>
+  <div class="gal-wrap">
+    <div class="gal-track" id="gal-track"></div>
+    <div class="gal-dots" id="gal-dots"></div>
+    <div class="gal-cnt" id="gal-cnt">1/4</div>
+  </div>
+  <div class="det-body">
+    <div class="det-tags" id="det-tags"></div>
+    <div class="det-price" id="det-price"></div>
+    <div class="det-name" id="det-name"></div>
+    <div class="det-sub" id="det-sub"></div>
+    <div class="sec-t">Të Dhënat Teknike</div>
+    <div class="specs-grid">
+      <div class="sg-item"><div class="sg-ico">⛽</div><div class="sg-v" id="sg-fuel"></div><div class="sg-l">Karburanti</div></div>
+      <div class="sg-item"><div class="sg-ico">⚙️</div><div class="sg-v" id="sg-trans"></div><div class="sg-l">Transmisioni</div></div>
+      <div class="sg-item"><div class="sg-ico">🏎️</div><div class="sg-v" id="sg-engine"></div><div class="sg-l">Motori</div></div>
+      <div class="sg-item"><div class="sg-ico">📅</div><div class="sg-v" id="sg-year"></div><div class="sg-l">Viti</div></div>
+      <div class="sg-item"><div class="sg-ico">🛣️</div><div class="sg-v" id="sg-km"></div><div class="sg-l">Km</div></div>
+      <div class="sg-item"><div class="sg-ico">🎨</div><div class="sg-v" id="sg-color"></div><div class="sg-l">Ngjyra</div></div>
+    </div>
+    <div class="sec-t">Karakteristikat</div>
+    <div class="feats-grid" id="feats-grid"></div>
+    <div class="sec-t">Përshkrimi</div>
+    <div class="det-desc" id="det-desc"></div>
+  </div>
+  <div class="cbot">
+    <div class="cbot-price-row">
+      <div class="cbot-lbl">Çmimi i Shitjes</div>
+      <div class="cbot-price" id="cbot-price"></div>
+    </div>
+    <div class="cbot-btns">
+      <button class="cbot-call" onclick="doCall()">📞 Telefono</button>
+      <button class="cbot-wa" id="wa-btn" onclick="doWhatsApp()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="zoom-w" id="zoom-w">
+  <button class="zoom-x" onclick="closeZoom()">✕</button>
+  <div class="zoom-e" id="zoom-e" style="display:none">🚗</div>
+  <img class="zoom-img-full" id="zoom-img-full" src="" alt="" style="display:none">
+</div>
+
+<!-- ═══════ ADMIN ═══════ -->
+
+<div id="admin" class="screen">
+  <div class="adm-top">
+    <div class="adm-greet">Panel i Administratorit</div>
+    <div class="adm-name">AutoPrime</div>
+    <div class="adm-stats">
+      <div class="adm-stat"><div class="adm-stat-n" id="stat-total">0</div><div class="adm-stat-l">Makina</div></div>
+      <div class="adm-stat"><div class="adm-stat-n" id="stat-active">0</div><div class="adm-stat-l">Aktive</div></div>
+      <div class="adm-stat"><div class="adm-stat-n" id="stat-sold">0</div><div class="adm-stat-l">Shitura</div></div>
+    </div>
+  </div>
+
+  <div class="adm-body">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="adm-sec" style="margin:0;flex:1">Shto Makinë të Re</div>
+    </div>
+
+```
+<div class="add-form show" id="add-form">
+  <div class="af-title">Detajet e Makinës</div>
+
+  <label class="f-lbl">Foto të Makinës (nga telefoni)</label>
+  <div class="photo-upload-area" onclick="document.getElementById('photo-input').click()">
+    <input type="file" id="photo-input" accept="image/*" multiple style="display:none" onchange="handlePhotos(this)">
+    <div class="pu-ico">📸</div>
+    <div class="pu-lbl">Shto Foto</div>
+    <div class="pu-sub">Klikoni ose zgjidhni nga galeria · JPG, PNG</div>
+  </div>
+  <div class="photos-preview" id="photos-preview"></div>
+
+  <div class="f-row2">
+    <div><label class="f-lbl">Marka</label><input class="f-inp" id="f-brand" placeholder="p.sh. BMW"></div>
+    <div><label class="f-lbl">Modeli</label><input class="f-inp" id="f-model" placeholder="p.sh. X5"></div>
+  </div>
+  <div class="f-row2">
+    <div><label class="f-lbl">Viti</label><input class="f-inp" id="f-year" type="number" placeholder="2021"></div>
+    <div><label class="f-lbl">Çmimi (€)</label><input class="f-inp" id="f-price" type="number" placeholder="25000"></div>
+  </div>
+  <div class="f-row2">
+    <div>
+      <label class="f-lbl">Karburanti</label>
+      <select class="f-sel" id="f-fuel">
+        <option value="diesel">⛽ Naftë</option>
+        <option value="benzin">⛽ Benzinë</option>
+        <option value="hybrid">🟢 Hybrid</option>
+        <option value="electric">⚡ Elektrik</option>
+      </select>
+    </div>
+    <div>
+      <label class="f-lbl">Transmisioni</label>
+      <select class="f-sel" id="f-trans">
+        <option value="auto">Automatik</option>
+        <option value="manual">Manual</option>
+      </select>
+    </div>
+  </div>
+  <div class="f-row2">
+    <div><label class="f-lbl">Motori (cc)</label><input class="f-inp" id="f-engine" placeholder="2000"></div>
+    <div><label class="f-lbl">Km</label><input class="f-inp" id="f-km" type="number" placeholder="85000"></div>
+  </div>
+  <div class="f-row2">
+    <div><label class="f-lbl">Ngjyra</label><input class="f-inp" id="f-color" placeholder="E Zezë"></div>
+    <div><label class="f-lbl">Vendi</label><input class="f-inp" id="f-city" placeholder="Tiranë"></div>
+  </div>
+  <label class="f-lbl">Përshkrimi</label>
+  <textarea class="f-inp" id="f-desc" style="resize:none;height:80px;line-height:1.6" placeholder="Përshkruaj makinën..."></textarea>
+  <button class="form-submit" onclick="addCar()">➕ Posto Makinën</button>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;margin-top:4px">
+  <div class="adm-sec" style="margin:0;flex:1">Makinat e Postuara</div>
+</div>
+<div class="adm-list" id="adm-list"></div>
+```
+
+  </div>
+
+  <div class="bot-nav">
+    <div class="nv on"><div class="nv-ico">🏠</div><div class="nv-lbl">Admin</div></div>
+    <div class="nv" onclick="showScreen('list')"><div class="nv-ico">🚗</div><div class="nv-lbl">Makina</div></div>
+    <div class="nv" onclick="showToast('📊 Statistikat — së shpejti!')"><div class="nv-ico">📊</div><div class="nv-lbl">Statistikat</div></div>
+    <div class="nv" onclick="showToast('⚙️ Cilësimet — së shpejti!')"><div class="nv-ico">⚙️</div><div class="nv-lbl">Cilësimet</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── OWNER CONFIG
+const OWNER_PHONE = '355691234567';
+
+// ── DATA STORE
+let cars = [
+  {id:1,photos:[],emoji:'🏎️',brand:'BMW',model:'X5 xDrive40d',year:2022,price:42000,fuel:'diesel',trans:'auto',engine:'3000',km:28000,color:'E Zezë',city:'Tiranë',desc:'BMW X5 në gjendje perfekte. Full opsion, panoramik, ngrohje ndenjësesh, kamera 360°, asistencë parkimi. Shërbim i rregullt në servis zyrtar BMW. Dokumenta të plota.'},
+  {id:2,photos:[],emoji:'🚗',brand:'Mercedes-Benz',model:'C220 AMG Line',year:2021,price:34500,fuel:'diesel',trans:'auto',engine:'2000',km:41000,color:'E Bardhë',city:'Tiranë',desc:'Mercedes C220 AMG Line, ngjyrë e bardhë perla. Paketa AMG eksteriori dhe interiori, sedilje lëkure, ekran 10.25", MBUX. Historiku i plotë i mirëmbajtjes.'},
+  {id:3,photos:[],emoji:'🚙',brand:'Toyota',model:'RAV4 Hybrid',year:2023,price:38000,fuel:'hybrid',trans:'auto',engine:'2500',km:12000,color:'E Kaltër',city:'Durrës',desc:'Toyota RAV4 Hybrid AWD, modeli 2023 pothuajse i ri. Konsumi 5.5L/100km, sistemi i sigurisë Toyota Safety Sense. Ideal për familje.'},
+  {id:4,photos:[],emoji:'🚕',brand:'Volkswagen',model:'Golf 8 GTI',year:2022,price:29000,fuel:'benzin',trans:'manual',engine:'2000',km:35000,color:'E Kuqe',city:'Vlorë',desc:'Golf 8 GTI, 245 kuaj fuqi, IQ.Drive, Virtual Cockpit Pro. Goma re Michelin Pilot Sport 4, shërbim i plotë.'},
+  {id:5,photos:[],emoji:'🚗',brand:'Audi',model:'A4 2.0 TDI',year:2020,price:22000,fuel:'diesel',trans:'auto',engine:'2000',km:62000,color:'E Hirtë',city:'Shkodër',desc:'Audi A4 quattro, Virtual Cockpit, full LED, sistemi MMI Navigation Plus. Makinë shumë e mirëmbajtur, pa dëme.'},
+];
+let nextId = 6;
+let pendingPhotos = []; // base64 array for new car
+let curCar = null;
+let isFav = false;
+
+// ── PHOTO UPLOAD
+function handlePhotos(input) {
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      pendingPhotos.push(e.target.result);
+      renderPhotoPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function renderPhotoPreview() {
+  const wrap = document.getElementById('photos-preview');
+  wrap.innerHTML = pendingPhotos.map((src, i) => `
+    <div class="photo-thumb-wrap">
+      <img src="${src}" alt="foto ${i+1}">
+      <div class="photo-remove" onclick="removePhoto(${i})">✕</div>
+    </div>`).join('');
+}
+
+function removePhoto(idx) {
+  pendingPhotos.splice(idx, 1);
+  renderPhotoPreview();
+}
+
+// ── FILTER STATE
+let filt = {fuel:null,trans:null,engine:null,price:null,year:null,sort:'default'};
+let pend = {fuel:null,trans:null,engine:null,price:null,year:null,sort:'default'};
+let activeFuelTab = 'all';
+
+// ── RENDER LIST
+function renderList() {
+  const list = document.getElementById('cars-list');
+  list.innerHTML = '';
+  let data = [...cars];
+  const q = document.getElementById('search-inp').value.toLowerCase().trim();
+  if(filt.sort==='price-asc') data.sort((a,b)=>a.price-b.price);
+  else if(filt.sort==='price-desc') data.sort((a,b)=>b.price-a.price);
+  else if(filt.sort==='year-desc') data.sort((a,b)=>b.year-a.year);
+  else if(filt.sort==='km-asc') data.sort((a,b)=>a.km-b.km);
+  let vis = 0;
+  data.forEach(car => {
+    if(!matchesCar(car, q)) return;
+    vis++;
+    list.innerHTML += buildCard(car);
+  });
+  document.getElementById('res-count').textContent = vis;
+  document.getElementById('empty-st').classList.toggle('show', vis===0);
+  updateStats();
+}
+
+function matchesCar(c, q) {
+  if(activeFuelTab !== 'all' && c.fuel !== activeFuelTab) return false;
+  if(filt.fuel && c.fuel !== filt.fuel) return false;
+  if(filt.trans && c.trans !== filt.trans) return false;
+  if(filt.engine) {
+    const cc = parseInt(c.engine);
+    if(filt.engine==='small' && (cc<1000||cc>1600)) return false;
+    if(filt.engine==='mid' && (cc<1600||cc>2000)) return false;
+    if(filt.engine==='large' && (cc<2000||cc>3000)) return false;
+    if(filt.engine==='xl' && cc<3000) return false;
+  }
+  if(filt.price) {
+    if(filt.price==='0-10000' && c.price>=10000) return false;
+    if(filt.price==='10000-20000' && (c.price<10000||c.price>=20000)) return false;
+    if(filt.price==='20000-40000' && (c.price<20000||c.price>=40000)) return false;
+    if(filt.price==='40000+' && c.price<40000) return false;
+  }
+  if(filt.year) {
+    if(filt.year==='old' && c.year>=2015) return false;
+    if(filt.year==='mid' && (c.year<2015||c.year>=2020)) return false;
+    if(filt.year==='new' && c.year<2020) return false;
+  }
+  if(q && !`${c.brand} ${c.model}`.toLowerCase().includes(q)) return false;
+  return true;
+}
+
+function buildCard(car) {
+  const fuelColors = {diesel:'fuel-diesel',benzin:'fuel-benzin',hybrid:'fuel-hybrid',electric:'fuel-electric'};
+  const fuelNames = {diesel:'Naftë',benzin:'Benzinë',hybrid:'Hybrid',electric:'Elektrik'};
+  const bgMap = {diesel:'linear-gradient(135deg,#e8e0d0,#ede5d5)',benzin:'linear-gradient(135deg,#e8dcc8,#ede3d0)',hybrid:'linear-gradient(135deg,#d8e8d8,#cce0cc)',electric:'linear-gradient(135deg,#d0dce8,#c8d8e8)'};
+  const hasPhoto = car.photos && car.photos.length > 0;
+  return `
+  <div class="car-card" data-id="${car.id}" onclick="openDetail(${car.id})">
+    <div class="car-img" style="${hasPhoto?'':'background:'+bgMap[car.fuel]}">
+      ${hasPhoto ? `<img src="${car.photos[0]}" alt="${car.brand} ${car.model}">` : `<div class="car-emoji">${car.emoji||'🚗'}</div>`}
+      <div class="car-img-overlay"></div>
+      <span class="car-fuel-tag ${fuelColors[car.fuel]}">${fuelNames[car.fuel]}</span>
+      <div class="car-price-overlay">${car.price.toLocaleString()}€</div>
+    </div>
+    <div class="car-body">
+      <div class="car-brand-row"><span class="car-brand">${car.brand}</span><span class="car-year">${car.year}</span></div>
+      <div class="car-model">${car.model}</div>
+      <div class="car-km">🛣️ ${car.km.toLocaleString()} km · ${car.trans==='auto'?'Automatik':'Manual'} · ${car.engine}cc${car.city?' · 📍'+car.city:''}</div>
+      <div class="car-specs-row">
+        <div class="cspec"><div class="cspec-n">${car.year}</div><div class="cspec-l">Viti</div></div>
+        <div class="cspec"><div class="cspec-n">${(car.km/1000).toFixed(0)}K</div><div class="cspec-l">km</div></div>
+        <div class="cspec"><div class="cspec-n">${car.engine}cc</div><div class="cspec-l">Motori</div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── DETAIL
+function openDetail(id) {
+  curCar = cars.find(c=>c.id===id);
+  if(!curCar) return;
+  const c = curCar;
+  isFav = false;
+  document.getElementById('det-fav').textContent = '🤍';
+  const fuelNames={diesel:'Naftë',benzin:'Benzinë',hybrid:'Hybrid',electric:'Elektrik'};
+  const fuelCls={diesel:'dtag-diesel',benzin:'dtag-benzin',hybrid:'dtag-hybrid',electric:'dtag-electric'};
+  document.getElementById('det-tags').innerHTML = `<span class="dtag ${fuelCls[c.fuel]}">${fuelNames[c.fuel]}</span>`;
+  document.getElementById('det-price').textContent = c.price.toLocaleString()+'€';
+  document.getElementById('det-name').textContent = c.brand+' '+c.model;
+  document.getElementById('det-sub').textContent = `${c.year} · ${c.km.toLocaleString()} km · ${c.color}${c.city?' · 📍'+c.city:''}`;
+  document.getElementById('cbot-price').textContent = c.price.toLocaleString()+'€';
+  document.getElementById('sg-fuel').textContent = fuelNames[c.fuel];
+  document.getElementById('sg-trans').textContent = c.trans==='auto'?'Automatik':'Manual';
+  document.getElementById('sg-engine').textContent = c.engine+'cc';
+  document.getElementById('sg-year').textContent = c.year;
+  document.getElementById('sg-km').textContent = c.km.toLocaleString()+'km';
+  document.getElementById('sg-color').textContent = c.color;
+  const feats = ['❄️ Klima','📻 Android/CarPlay','🔆 Full LED','🅿️ Parking Sensor','📷 Kamera','🔒 Alarm'];
+  document.getElementById('feats-grid').innerHTML = feats.map(f=>`<div class="feat"><span class="feat-ico">${f.split(' ')[0]}</span><span class="feat-txt">${f.split(' ').slice(1).join(' ')}</span></div>`).join('');
+  document.getElementById('det-desc').textContent = c.desc;
+  initGallery(c);
+  showScreen('detail');
+}
+
+function togFav(){isFav=!isFav;document.getElementById('det-fav').textContent=isFav?'❤️':'🤍';}
+function doCall(){window.location.href=`tel:+${OWNER_PHONE}`;}
+function doWhatsApp(){
+  if(!curCar)return;
+  const msg=encodeURIComponent(`Përshëndetje! Jam i interesuar për ${curCar.brand} ${curCar.model} (${curCar.year}) me çmim ${curCar.price.toLocaleString()}€. A është ende e disponueshme?`);
+  window.open(`https://wa.me/${OWNER_PHONE}?text=${msg}`,'_blank');
+}
+
+// ── GALLERY (supports real photos)
+let galIdx=0,touchX=0;
+function initGallery(c) {
+  const hasPhotos = c.photos && c.photos.length > 0;
+  const t=document.getElementById('gal-track');
+  const d=document.getElementById('gal-dots');
+
+  if(hasPhotos) {
+    t.innerHTML = c.photos.map((src,i)=>`
+      <div class="gal-slide" onclick="openZoom(null,'${src}')" style="background:#2c2416;padding:0">
+        <img src="${src}" alt="foto ${i+1}" style="width:100%;height:100%;object-fit:cover;cursor:zoom-in">
+      </div>`).join('');
+  } else {
+    const lbls=['Pamja e Jashtme','Brendësia','Motori','Detaje'];
+    const bgs=['linear-gradient(135deg,#e8e0d0,#ede5d5)','linear-gradient(135deg,#e0ddd5,#e8e3d8)','linear-gradient(135deg,#ddd8ce,#e5dfd4)','linear-gradient(135deg,#e5e0d8,#eae5da)'];
+    t.innerHTML=lbls.map((l,i)=>`
+      <div class="gal-slide" onclick="openZoom('${c.emoji||'🚗'}',null)" style="background:${bgs[i]};${i>0?'font-size:80px;flex-direction:column;gap:8px':''}">
+        <span>${c.emoji||'🚗'}</span>${i>0?`<span style="font-size:13px;color:var(--muted);font-family:'Jost',sans-serif">${l}</span>`:''}
+      </div>`).join('');
+  }
+  const n = hasPhotos ? c.photos.length : 4;
+  d.innerHTML = Array(n).fill(0).map((_,i)=>`<div class="gdot${i===0?' active':''}"></div>`).join('');
+  galIdx=0;updGal();
+  // re-attach touch events
+  t.ontouchstart = e=>{touchX=e.touches[0].clientX;};
+  t.ontouchend = e=>{const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>40)slideGal(dx<0?1:-1);};
+}
+
+function slideGal(d){const n=document.querySelectorAll('.gal-slide').length;galIdx=Math.max(0,Math.min(n-1,galIdx+d));updGal();}
+function updGal(){
+  document.getElementById('gal-track').style.transform=`translateX(-${galIdx*100}%)`;
+  document.querySelectorAll('.gdot').forEach((d,i)=>d.classList.toggle('active',i===galIdx));
+  document.getElementById('gal-cnt').textContent=`${galIdx+1}/${document.querySelectorAll('.gal-slide').length}`;
+}
+function openZoom(emoji, imgSrc){
+  const ze=document.getElementById('zoom-e');
+  const zi=document.getElementById('zoom-img-full');
+  if(imgSrc){ze.style.display='none';zi.src=imgSrc;zi.style.display='block';}
+  else{zi.style.display='none';ze.textContent=emoji;ze.style.display='block';}
+  document.getElementById('zoom-w').classList.add('open');
+}
+function closeZoom(){document.getElementById('zoom-w').classList.remove('open');}
+document.getElementById('zoom-w').addEventListener('click',e=>{if(e.target===e.currentTarget)closeZoom();});
+
+// ── FILTER PANEL
+function openFP(){
+  pend={...filt};syncFP();updateMatchC();
+  document.getElementById('fp-ov').classList.add('open');
+  document.getElementById('fp-panel').classList.add('open');
+}
+function closeFP(){
+  document.getElementById('fp-ov').classList.remove('open');
+  document.getElementById('fp-panel').classList.remove('open');
+}
+function syncFP(){
+  ['fuel','trans','engine','price','year'].forEach(k=>{
+    document.querySelectorAll(`[data-${k}]`).forEach(el=>el.classList.toggle('sel',el.dataset[k]===pend[k]));
+  });
+  document.querySelectorAll('[data-sort]').forEach(el=>el.classList.toggle('sel',el.dataset.sort===pend.sort));
+}
+function togChip(el,type){
+  const v=el.dataset[type];
+  if(pend[type]===v){pend[type]=null;document.querySelectorAll(`[data-${type}]`).forEach(e=>e.classList.remove('sel'));}
+  else{pend[type]=v;document.querySelectorAll(`[data-${type}]`).forEach(e=>e.classList.toggle('sel',e.dataset[type]===v));}
+  updateMatchC();
+}
+function selSort(el){
+  pend.sort=el.dataset.sort;
+  document.querySelectorAll('[data-sort]').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function updateMatchC(){
+  const c=cars.filter(car=>matchesCar(car,'')).length;
+  document.getElementById('match-c').textContent=c;
+}
+function applyFilters(){
+  filt={...pend};
+  renderList();closeFP();updateBadge();renderChips();
+  const sl={'default':'Rendit','price-asc':'Çmimi ↑','price-desc':'Çmimi ↓','year-desc':'Viti ↓','km-asc':'Km ↑'};
+  document.getElementById('sort-lbl').textContent=sl[filt.sort]||'Rendit';
+  document.getElementById('sort-pill').classList.toggle('on',filt.sort!=='default');
+}
+function updateBadge(){
+  const n=Object.values(filt).filter((v,i)=>i<5&&v!==null).length+(filt.sort!=='default'?1:0);
+  const b=document.getElementById('fbadge');b.textContent=n;b.style.display=n>0?'flex':'none';
+}
+function renderChips(){
+  const w=document.getElementById('af-wrap');w.innerHTML='';
+  const fn={fuel:'⛽',trans:'⚙️',engine:'🏎️',price:'💰',year:'📅'};
+  const lbl={fuel:{diesel:'Naftë',benzin:'Benzinë',hybrid:'Hybrid',electric:'Elektrik'},trans:{auto:'Automatik',manual:'Manual'},engine:{small:'1000–1600cc',mid:'1600–2000cc',large:'2000–3000cc',xl:'3000cc+'},price:{'0-10000':'deri 10K€','10000-20000':'10K–20K€','20000-40000':'20K–40K€','40000+':'40K€+'},year:{old:'Para 2015',mid:'2015–2019',new:'2020+'}};
+  ['fuel','trans','engine','price','year'].forEach(k=>{
+    if(filt[k])w.appendChild(mkChip(`${fn[k]} ${lbl[k][filt[k]]}`,()=>{filt[k]=null;pend[k]=null;renderList();updateBadge();renderChips();}));
+  });
+  if(filt.sort!=='default'){const sl={'price-asc':'Çmimi ↑','price-desc':'Çmimi ↓','year-desc':'Viti ↓','km-asc':'Km ↑'};w.appendChild(mkChip('↕️ '+sl[filt.sort],()=>{filt.sort='default';pend.sort='default';renderList();updateBadge();renderChips();}));}
+}
+function mkChip(txt,fn){
+  const d=document.createElement('div');d.className='af-chip';
+  d.innerHTML=`${txt}<span class="af-x">✕</span>`;
+  d.querySelector('.af-x').onclick=e=>{e.stopPropagation();fn();};return d;
+}
+function resetAll(){
+  filt={fuel:null,trans:null,engine:null,price:null,year:null,sort:'default'};
+  pend={...filt};activeFuelTab='all';
+  document.querySelectorAll('.ftab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.getElementById('search-inp').value='';
+  renderList();updateBadge();renderChips();syncFP();updateMatchC();
+}
+function fuelTab(el,val){
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');activeFuelTab=val;renderList();
+}
+function doSearch(){renderList();}
+document.getElementById('search-inp').addEventListener('keyup',e=>{if(e.key==='Enter')doSearch();});
+
+// ── ADMIN
+function addCar(){
+  const brand=document.getElementById('f-brand').value.trim();
+  const model=document.getElementById('f-model').value.trim();
+  const year=parseInt(document.getElementById('f-year').value)||2020;
+  const price=parseInt(document.getElementById('f-price').value)||0;
+  const fuel=document.getElementById('f-fuel').value;
+  const trans=document.getElementById('f-trans').value;
+  const engine=document.getElementById('f-engine').value||'2000';
+  const km=parseInt(document.getElementById('f-km').value)||0;
+  const color=document.getElementById('f-color').value.trim()||'—';
+  const city=document.getElementById('f-city').value.trim()||'';
+  const desc=document.getElementById('f-desc').value.trim()||'Makinë në gjendje të mirë.';
+  if(!brand||!model){showToast('⚠️ Plotëso markën dhe modelin!');return;}
+  if(!price){showToast('⚠️ Plotëso çmimin!');return;}
+  const fuelEmojis={diesel:'🚗',benzin:'🚕',hybrid:'🚙',electric:'🏎️'};
+  cars.unshift({id:nextId++,photos:[...pendingPhotos],emoji:fuelEmojis[fuel]||'🚗',brand,model,year,price,fuel,trans,engine,km,color,city,desc});
+  pendingPhotos=[];
+  renderPhotoPreview();
+  clearForm();renderList();renderAdminList();
+  showToast('✅ Makina u postua me sukses!');
+}
+
+function clearForm(){
+  ['f-brand','f-model','f-year','f-price','f-engine','f-km','f-color','f-city','f-desc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-fuel').value='diesel';
+  document.getElementById('f-trans').value='auto';
+}
+
+function deleteCar(id){
+  cars=cars.filter(c=>c.id!==id);
+  renderList();renderAdminList();showToast('🗑️ Makina u fshi!');
+}
+
+function renderAdminList(){
+  const list=document.getElementById('adm-list');
+  list.innerHTML=cars.map(c=>`
+  <div class="adm-row">
+    <div class="adm-emo" style="${c.photos&&c.photos.length>0?'padding:0;overflow:hidden':''}">
+      ${c.photos&&c.photos.length>0?`<img src="${c.photos[0]}" style="width:54px;height:54px;object-fit:cover;border-radius:10px">`:`${c.emoji||'🚗'}`}
+    </div>
+    <div class="adm-info">
+      <div class="adm-row-brand">${c.brand}</div>
+      <div class="adm-row-model">${c.model} · ${c.year}</div>
+      <div class="adm-row-price">${c.price.toLocaleString()}€</div>
+      <div class="adm-row-meta">${c.km.toLocaleString()}km · ${c.fuel==='diesel'?'Naftë':c.fuel==='benzin'?'Benzinë':c.fuel==='hybrid'?'Hybrid':'Elektrik'} · ${c.trans==='auto'?'Auto':'Manual'}${c.city?' · '+c.city:''}</div>
+    </div>
+    <div class="adm-acts">
+      <div class="adm-act" onclick="openDetail(${c.id});showScreen('detail')">👁️</div>
+      <div class="adm-act adm-del" onclick="deleteCar(${c.id})">🗑️</div>
+    </div>
+  </div>`).join('');
+  updateStats();
+}
+
+function updateStats(){
+  document.getElementById('stat-total').textContent=cars.length;
+  document.getElementById('stat-active').textContent=cars.length;
+  document.getElementById('stat-sold').textContent=0;
+}
+
+// ── UTILS
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='admin')renderAdminList();
+}
+function goBack(t){showScreen(t);}
+
+// INIT
+renderList();
+updateMatchC();
+</script>
+
+</body>
+</html>
